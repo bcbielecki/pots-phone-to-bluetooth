@@ -36,11 +36,11 @@ I have some notes below, outlining the project setup, but they will be rather sc
 
 ## Project Checklist
 
-[ ] Prototype bluetooth connection using the ESP chips, built-in BLE module
-[ ] I need to find a manual which describes the communication protocol used by the rotary phone
-[ ] Find or devise code which can decode signals from the rotary phone (like dial movements, hanging up, etc.)
-[ ] Find or devise code which can encode and send signals to the rotary phone
-[ ] Determine power requirements for the phone line
+- [ ] Prototype bluetooth connection using the ESP chips, built-in BLE module
+- [ ] I need to find a manual which describes the communication protocol used by the rotary phone
+- [ ] Find or devise code which can decode signals from the rotary phone (like dial movements, hanging up, etc.)
+- [ ] Find or devise code which can encode and send signals to the rotary phone
+- [ ] Determine power requirements for the phone line
 
 
 ## Project Notes
