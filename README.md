@@ -21,7 +21,7 @@ I have some notes below, outlining the project setup, but they will be rather sc
 ## References
 - [ESP IoT Development Framework API Docs](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/index.html)
 - [ArduinoBLE API Docs](https://docs.arduino.cc/libraries/arduinoble/#BLE%20class)
-- [ESP32-WROOM-32D](https://documentation.espressif.com/esp32-wroom-32d_esp32-wroom-32u_datasheet_en.pdf)
+- [ESP32-WROOM-32D Datasheet](https://documentation.espressif.com/esp32-wroom-32d_esp32-wroom-32u_datasheet_en.pdf)
 
 ## Bill of Materials
 - ESP32-WROOM-32D
