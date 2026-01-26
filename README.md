@@ -5,14 +5,14 @@ Transforming the iconic rotary phone into a modern hands-free bluetooth phone de
 I have a fascination with old technology, which manifests as an unfettered accumulation of ~~junk~~ film cameras, typewriters, 
 and now, a rotary phone. The allure of real, sturdy components, haptic, mechanical buttons, 
 bells that ring, sounds that ding, and beige plastic is impossible to resist! Admittedly, the rotary phone was meant as a nice
-but inoperable centerpiece to a collection of midcentury decor in my apartment. However, enough house guests play with the damn dial that I may as well try to make it functional. 
+but inoperable centerpiece to a collection of mid-century decor in my apartment. However, enough house guests play with the damn dial that I may as well try to make it functional. 
 
 For lack of a landline connection, I needed a suitable alternative by which the phone would reach the real world.
-I first considered gutting the electrical internals of the phone, meant for AC power delivery from a phone jack. The insides would then be replaced with a microcontroller which could relay calls from a cell service module. The MCU would also decode numbers dialed from the rotary. Even better, this could all be done on low voltage, DC power. Easy peasy..... but then there was the matter of the bell. The actuator which rang the bell relied on that AC power
-which I had so readily scorned as unecessary for my purposes. Perhaps I could have done without it, but if I didn't have a bell to jolt myself and the neighbors five units down awake, what was the point? Better yet, if the old electrical circuits still worked, why not use them to my advantage?
+I first considered gutting the electrical internals of the phone, meant for AC power delivery from a phone jack. The insides would then be replaced with a micro-controller which could relay calls from a cell service module. The MCU would also decode numbers dialed from the rotary. Even better, this could all be done on low voltage, DC power. Easy peasy..... but then there was the matter of the bell. The actuator which rang the bell relied on that AC power
+which I had so readily scorned as unnecessary for my purposes. Perhaps I could have done without it, but if I didn't have a bell to jolt myself and the neighbors five units down awake, what was the point? Better yet, if the old electrical circuits still worked, why not use them to my advantage?
 And the more I thought about it, the more I realized I committed myself to a $20+/month cell plan for a phone I would use twice before forgetting.
 
-So, I have arrived at a new, ideally final, solution: use a bluetooth-capable microcontroller to connect to my smartphone. The microcontroller would  transmit my smartphone call audio over the phone line to the rotary phone. The microcontroller would  do so, simulating the various signals which
+So, I have arrived at a new, ideally final, solution: use a bluetooth-capable micro-controller to connect to my smartphone. The micro-controller would  transmit my smartphone call audio over the phone line to the rotary phone. The micro-controller would  do so, simulating the various signals which
 the phone would have received some 60 years ago. A user could even dial a number on the rotary phone to trigger a call on the smartphone.
 
 This is an **active and very incomplete** project, so if you have come across this page before its completion, good luck!
