@@ -5,9 +5,10 @@
 #include "sdkconfig.h"
 
 // Define the GPIO pin for the LED (GPIO 2 is common for onboard LEDs)
-#define BLINK_GPIO 2
+#define BLINK_GPIO GPIO_NUM_2
 
-void app_main(void)
+// extern "C" is used to prevent name mangling when using C++ compiler, so that the ESP-IDF can find the app_main function.
+extern "C" void app_main(void)
 {
     // Configure the GPIO pin
     gpio_reset_pin(BLINK_GPIO);
