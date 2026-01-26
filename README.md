@@ -46,4 +46,6 @@ I have some notes below, outlining the project setup, but they will be rather sc
 ## Project Notes
 
 - Brief research suggests I need to look at an implementation of Bluetooth's Hands-Free Profile (HFP) or Headphones Profile (HSP) for my purposes
+    - The ESP32-WROOM-32D uses Blueooth 4.2, which doesn't have audio support for Bluetooth Low Energy (BLE). That should be fine? I have
+    invested in a separate bluetooth module with 5.2 and, therefore, low energy audio capabilities.
 - What is a SLIC module? Maybe that's what I need for the phone signals?
