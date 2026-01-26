@@ -22,6 +22,8 @@ I have some notes below, outlining the project setup, but they will be rather sc
 
 - [ESP32-WROOM-32D Datasheet](https://documentation.espressif.com/esp32-wroom-32d_esp32-wroom-32u_datasheet_en.pdf)
 - [Bluetooth Hands-Free Profile](https://www.bluetooth.com/specifications/specs/hands-free-profile-1-8/)
+- [PCM510x DAC I2C Datasheet](https://www.ti.com/lit/ds/symlink/pcm5102.pdf?ts=1769407946283&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FPCM5102)
+- [ADS111x ADC I2C Datasheet](https://www.ti.com/lit/ds/symlink/ads1115.pdf)
 
 ### ESP IDF API Docs
 - [ESP IoT Development Framework API Docs](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/index.html)
@@ -60,8 +62,11 @@ I have some notes below, outlining the project setup, but they will be rather sc
     - The ESP32-WROOM-32D uses Blueooth 4.2, which doesn't have audio support for Bluetooth Low Energy (BLE). That should be fine? I have
     invested in a separate bluetooth module with 5.2 and, therefore, low energy audio capabilities.
 - What is a SLIC module? Maybe that's what I need for the phone signals?
+    - It is exactly what I need to generate signals of the right voltages and frequencies for the phone. I'll use the Ag1171 SLIC module. It has the advantage of accepting a conventional 3.3v-5v input, which is spectacular considering I would otherwise need to supply much higher voltages.
 - If the source files end in *.cpp, they will naturally be compiled as C++ files. A consequence is a crackdown on certain C patterns. For example,
 the compiler with throw errors for implicit C-style casts.
 - Various phone connectors:
    - [4P4C](https://en.wikipedia.org/wiki/Modular_connector#4P4C) (The four line connector) is used to connect the headset to the phone base - I foolishly bought the wrong cables
    - [RJ11](https://en.wikipedia.org/wiki/Registered_jack#RJ11) is used to connect a phone to the local carrier
+- I realized that the ESP32 is woefully unable to convert analog to digital or digital to analog signals at high quality. I will need to use separate modules
+to do that work.
