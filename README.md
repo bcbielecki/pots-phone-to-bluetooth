@@ -23,6 +23,7 @@ I have some notes below, outlining the project setup, but they will be rather sc
 - [ESP IDF Bluetooth HSP API Docs](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/bluetooth/esp_hf_client.html)
 - [ESP32-WROOM-32D Datasheet](https://documentation.espressif.com/esp32-wroom-32d_esp32-wroom-32u_datasheet_en.pdf)
 - [Bluetooth Hands-Free Profile](https://www.bluetooth.com/specifications/specs/hands-free-profile-1-8/)
+- [ESP IDF Build System Docs](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/build-system.html)
 
 
 ## Bill of Materials
