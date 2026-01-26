@@ -28,7 +28,7 @@ I have some notes below, outlining the project setup, but they will be rather sc
 - [Build System Docs](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/build-system.html)
 - [FreeRTOS & Task API](https://docs.espressif.com/projects/esp-idf/en/v4.3/esp32/api-reference/system/freertos.html)
 - [Bluetooth HFP API Docs](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/bluetooth/esp_hf_client.html)
-   - [HFP Hands-Free Device Example Project](https://github.com/espressif/esp-idf/tree/v5.5.2/examples/bluetooth/bluedroid/classic_bt/hfp_hf)
+   - [HFP Hands-Free Device Example Project (available under Apache 2.0 License)](https://github.com/espressif/esp-idf/tree/v5.5.2/examples/bluetooth/bluedroid/classic_bt/hfp_hf)
 
 
 ## Bill of Materials
