@@ -35,6 +35,9 @@ I have some notes below, outlining the project setup, but they will be rather sc
 - ESP32-WROOM-32D
     - Most importantly, it is a Bluetooth Low Energy (BLE) capable device.
 - AT&T Bell rotary phone with a standard POTS phone line port
+- Low Power Ringing [Silvertel SLIC module](https://silvertel.com/images/datasheets/Ag1171-datasheet-Low-cost-ringing-SLIC-with-single-supply.pdf)
+   - The datasheet (linked above) details the required capacitors, diodes, components, etc.
+   - [Mouser link](https://www.mouser.com/ProductDetail/Silvertel/Ag1171S?qs=GedFDFLaBXHsgNHkErhvOw%3D%3D)
 
 ## Development Environment Setup
 
@@ -59,3 +62,6 @@ I have some notes below, outlining the project setup, but they will be rather sc
 - What is a SLIC module? Maybe that's what I need for the phone signals?
 - If the source files end in *.cpp, they will naturally be compiled as C++ files. A consequence is a crackdown on certain C patterns. For example,
 the compiler with throw errors for implicit C-style casts.
+- Various phone connectors:
+   - [4P4C](https://en.wikipedia.org/wiki/Modular_connector#4P4C) (The four line connector) is used to connect the headset to the phone base - I foolishly bought the wrong cables
+   - [RJ11](https://en.wikipedia.org/wiki/Registered_jack#RJ11) is used to connect a phone to the local carrier
