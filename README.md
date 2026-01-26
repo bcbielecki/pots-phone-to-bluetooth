@@ -37,7 +37,7 @@ I have some notes below, outlining the project setup, but they will be rather sc
 - AT&T Bell rotary phone with a standard POTS phone line port
 - Low Power Ringing [Silvertel SLIC module](https://silvertel.com/images/datasheets/Ag1171-datasheet-Low-cost-ringing-SLIC-with-single-supply.pdf)
    - The datasheet (linked above) details the required capacitors, diodes, components, etc.
-   - [Mouser link](https://www.mouser.com/ProductDetail/Silvertel/Ag1171S?qs=GedFDFLaBXHsgNHkErhvOw%3D%3D)
+   - [DigiKey link](https://www.digikey.com/en/products/detail/silver-telecom-ltd/AG1171-S/21187236)
 
 ## Development Environment Setup
 
