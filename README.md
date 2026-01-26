@@ -52,3 +52,5 @@ I have some notes below, outlining the project setup, but they will be rather sc
     - The ESP32-WROOM-32D uses Blueooth 4.2, which doesn't have audio support for Bluetooth Low Energy (BLE). That should be fine? I have
     invested in a separate bluetooth module with 5.2 and, therefore, low energy audio capabilities.
 - What is a SLIC module? Maybe that's what I need for the phone signals?
+- If the source files end in *.cpp, they will naturally be compiled as C++ files. A consequence is a crackdown on certain C patterns. For example,
+the compiler with throw errors for implicit C-style casts.
