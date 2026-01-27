@@ -1,6 +1,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/gpio.h"
+#include "BluetoothHFClient.hpp"
 
 // Define the GPIO pin for the LED (GPIO 2 is common for onboard LEDs)
 #define BLINK_GPIO GPIO_NUM_2
@@ -26,6 +27,7 @@ extern "C" void app_main(void)
     // {
     //  vTaskDelete( xHandle );
     // }
+    BluetoothHFClient::Initialize();
 }
 
 void blinkLEDLoop(void * pvParameters)
