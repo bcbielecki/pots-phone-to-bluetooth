@@ -1,6 +1,8 @@
 #ifndef BLUETOOTH_HF_CLIENT_HPP
 #define BLUETOOTH_HF_CLIENT_HPP
 
+#include "esp_err.h"
+
 /**********************************************************************
  * @file BluetoothHFClient.hpp
  * @brief Header file for Bluetooth Hands-Free Client static class.
@@ -8,29 +10,32 @@
 
 namespace BluetoothHF {
 
-    enum class ClientErrorType {
-        SUCCESS = 0,
-        NOT_INITIALIZED,
-    };
-
     class Client {
     public:
-        Client() = delete;
-        ~Client() = delete;
+        static Client& GetInstance() {
+            static Client instance;
+            return instance;
+        }
 
-        static ClientErrorType Initialize();
-        static bool IsInitialized() { return Client::isInitialized; }
+        esp_err_t InitializeService();
+        bool IsServiceInitialized() { return isServiceInitialized; }
+        esp_err_t Connect();
+        esp_err_t Disconnect();
+        bool IsConnected();
+        esp_err_t AnswerCall();
+        esp_err_t EndCall();
+        esp_err_t DialNumber(const char* number);
 
-        static ClientErrorType Connect();
-        static ClientErrorType Disconnect();
-        static bool IsConnected();
-
-        static ClientErrorType AnswerCall();
-        static ClientErrorType EndCall();
-        static ClientErrorType DialNumber(const char* number);
+        // Returns an 18-character string representation of the Bluetooth address (MAC).
+        // If the client is not initialized, returns nullptr.
+        void GetBluetoothAddress(char addressStr[18]);
         
     private:
-        static bool isInitialized;
+        Client();
+        ~Client() {};
+
+        bool isServiceInitialized;
+        static constexpr const char* LOG_TAG_CLIENT = "BluetoothHFClient";
 
     };
 

@@ -2,10 +2,13 @@
 #include "freertos/task.h"
 #include "driver/gpio.h"
 #include "BluetoothHFClient.hpp"
+#include "esp_log.h"
 
 // Define the GPIO pin for the LED (GPIO 2 is common for onboard LEDs)
 #define BLINK_GPIO GPIO_NUM_2
 #define STACK_SIZE 2048
+
+static const char* LOG_TAG = "MainApp";
 
 void blinkLEDLoop(void * pvParameters);
 
@@ -14,6 +17,7 @@ extern "C" void app_main(void)
 {
     static uint8_t ucParameterToPass;
     TaskHandle_t xHandle = NULL;
+    ESP_LOGI(LOG_TAG, "Starting Bluetooth Hands-Free Client Application");
 
     // Create the task, storing the handle.  Note that the passed parameter ucParameterToPass
     // must exist for the lifetime of the task, so in this case is declared static.  If it was just an
@@ -27,7 +31,10 @@ extern "C" void app_main(void)
     // {
     //  vTaskDelete( xHandle );
     // }
-    BluetoothHF::Client::Initialize();
+    BluetoothHF::Client& bluetoothHFClient = BluetoothHF::Client::GetInstance();
+
+    esp_err_t initError = bluetoothHFClient.InitializeService();
+    ESP_ERROR_CHECK( initError );
 }
 
 void blinkLEDLoop(void * pvParameters)
