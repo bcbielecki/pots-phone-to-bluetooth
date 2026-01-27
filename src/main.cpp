@@ -27,7 +27,7 @@ extern "C" void app_main(void)
     // {
     //  vTaskDelete( xHandle );
     // }
-    BluetoothHFClient::Initialize();
+    BluetoothHF::Client::Initialize();
 }
 
 void blinkLEDLoop(void * pvParameters)

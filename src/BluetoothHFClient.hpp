@@ -5,39 +5,34 @@
  * @file BluetoothHFClient.hpp
  * @brief Header file for Bluetooth Hands-Free Client static class.
  **********************************************************************/
-class BluetoothHFClient {
-public:
-    BluetoothHFClient() = delete;
-    ~BluetoothHFClient() = delete;
 
-    static void Initialize();
-    static bool IsInitialized() { return BluetoothHFClient::isInitialized; }
+namespace BluetoothHF {
 
-    static void Connect();
-    static void Disconnect();
-    static bool IsConnected();
+    enum class ClientErrorType {
+        SUCCESS = 0,
+        NOT_INITIALIZED,
+    };
 
-    static void AnswerCall();
-    static void EndCall();
-    static void DialNumber(const char* number);
-    
-private:
-    static bool isInitialized;
+    class Client {
+    public:
+        Client() = delete;
+        ~Client() = delete;
 
-};
+        static ClientErrorType Initialize();
+        static bool IsInitialized() { return Client::isInitialized; }
 
+        static ClientErrorType Connect();
+        static ClientErrorType Disconnect();
+        static bool IsConnected();
 
+        static ClientErrorType AnswerCall();
+        static ClientErrorType EndCall();
+        static ClientErrorType DialNumber(const char* number);
+        
+    private:
+        static bool isInitialized;
 
+    };
 
-
-
-
-
-
-
-
-
-
-
-
+}
 #endif // BLUETOOTH_HF_CLIENT_HPP
