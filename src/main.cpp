@@ -38,7 +38,7 @@ extern "C" void app_main(void)
 
     char bluetoothAddressStr[18] {0};
     bluetoothHFClient.GetBluetoothAddress(bluetoothAddressStr);
-    ESP_LOGI(LOG_TAG_CLIENT, "Bluetooth address (MAC): %s", bluetoothAddressStr);
+    ESP_LOGI(LOG_TAG, "Bluetooth address (MAC): %s", bluetoothAddressStr);
 
     //esp_bt_gap_set_device_name("Ben_BT_Device");
 }
