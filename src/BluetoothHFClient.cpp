@@ -76,6 +76,17 @@ esp_err_t Client::StartCoreService() {
     return ESP_OK;
 }
 
+void GAPEventHandler(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
+{
+
+}
+
+
+void HFEventHandler(esp_hf_client_cb_event_t event, esp_hf_client_cb_param_t *param)
+{
+    
+}
+
 void Client::GetBluetoothAddress(char addressStr[18]) {
     
     if (!IsCoreServiceActive()) {

@@ -25,9 +25,22 @@ namespace BluetoothHF {
         /// @return esp_err_t - ESP_OK if successful, error code otherwise. If an error occurs, it is rather fatal for the Bluetooth functionality.
         esp_err_t StartCoreService();
 
-        /// @brief Checks if the core Bluetooth Hands-Free service is active.
+        /// @brief Checks if the core Bluetooth Hands-Free service is active
         /// @return bool - true if the service is active (after calling StartCoreService() with success), false otherwise.
         bool IsCoreServiceActive() { return isServiceInitialized; }
+
+        /// @brief Handles General Access Profile (GAP) events for the Bluetooth Hands-Free Client
+        /// Should be registered as a callback with esp_bt_gap_register_callback in StartCoreService.
+        /// @param event - the GAP event type
+        /// @param param - parameters associated with the event
+        void GAPEventHandler(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param);
+
+        /// @brief Handles Hands-Free Profile (HFP) client events
+        /// Should be registered as a callback with esp_hf_client_register_callback in StartCoreService
+        /// @param event - the Hands-Free Client event type
+        /// @param param - parameters associated with the event
+        void HFEventHandler(esp_hf_client_cb_event_t event, esp_hf_client_cb_param_t *param);
+
 
         esp_err_t Connect();
         esp_err_t Disconnect();
