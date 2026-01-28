@@ -33,8 +33,14 @@ extern "C" void app_main(void)
     // }
     BluetoothHF::Client& bluetoothHFClient = BluetoothHF::Client::GetInstance();
 
-    esp_err_t initError = bluetoothHFClient.InitializeService();
+    esp_err_t initError = bluetoothHFClient.StartCoreService();
     ESP_ERROR_CHECK( initError );
+
+    char bluetoothAddressStr[18] {0};
+    bluetoothHFClient.GetBluetoothAddress(bluetoothAddressStr);
+    ESP_LOGI(LOG_TAG_CLIENT, "Bluetooth address (MAC): %s", bluetoothAddressStr);
+
+    //esp_bt_gap_set_device_name("Ben_BT_Device");
 }
 
 void blinkLEDLoop(void * pvParameters)

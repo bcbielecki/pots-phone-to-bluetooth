@@ -22,12 +22,11 @@ Client::Client() : isServiceInitialized(false) {
     // Constructor implementation (if needed)
 }
 
-/// @brief Initializes the various services required for the Bluetooth Hands-Free Client.
-/// @return esp_err_t - ESP_OK if successful, error code otherwise. If an error occurs, it is rather fatal for the Bluetooth functionality.
-esp_err_t Client::InitializeService() {
 
-    if (this->isServiceInitialized) {
-        return ESP_OK; // Already initialized
+esp_err_t Client::StartCoreService() {
+
+    if (IsCoreServiceActive()) {
+        return ESP_OK;
     }
 
     esp_err_t errorCode = ESP_OK;
@@ -71,21 +70,16 @@ esp_err_t Client::InitializeService() {
     errorCode = esp_bluedroid_enable();
     ESP_RETURN_ON_ERROR(errorCode, LOG_TAG_CLIENT, "%s - BlueDroid enable failed: %s",
          __func__, esp_err_to_name(errorCode));
-
+  
     this->isServiceInitialized = true;
-
-    char bluetoothAddressStr[18] {0};
-    GetBluetoothAddress(bluetoothAddressStr);
-    ESP_LOGI(LOG_TAG_CLIENT, "Bluetooth address (MAC): %s", bluetoothAddressStr);
-
-    esp_bt_gap_set_device_name("Ben_BT_Device");
 
     return ESP_OK;
 }
 
 void Client::GetBluetoothAddress(char addressStr[18]) {
-    if (!this->isServiceInitialized) {
-        return; // Service not initialized
+    
+    if (!IsCoreServiceActive()) {
+        return;
     }
 
     const uint8_t* numAddress = esp_bt_dev_get_address();

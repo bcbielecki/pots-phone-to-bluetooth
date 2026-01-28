@@ -16,9 +16,11 @@ namespace BluetoothHF {
             static Client instance;
             return instance;
         }
+        /// @brief Initializes the various services required for the Bluetooth Hands-Free Client.
+        /// @return esp_err_t - ESP_OK if successful, error code otherwise. If an error occurs, it is rather fatal for the Bluetooth functionality.
+        esp_err_t StartCoreService();
+        bool IsCoreServiceActive() { return isServiceInitialized; }
 
-        esp_err_t InitializeService();
-        bool IsServiceInitialized() { return isServiceInitialized; }
         esp_err_t Connect();
         esp_err_t Disconnect();
         bool IsConnected();
