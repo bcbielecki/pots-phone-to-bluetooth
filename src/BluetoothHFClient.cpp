@@ -16,6 +16,11 @@
 #include "esp_gap_bt_api.h"
 #include "esp_hf_client_api.h"
 
+#include "freertos/FreeRTOSConfig.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
+#include "freertos/task.h"
+
 #include "nvs.h"
 #include "nvs_flash.h"
 
@@ -24,7 +29,10 @@ using namespace BluetoothHF;
 
 
 Client::Client() : isServiceInitialized(false) {
-    // Constructor implementation (if needed)
+    // I should probably start the worker thread and job queue here,
+    // so their handles are initialized immediately.
+    workerJobQueue = xQueueCreate(10, sizeof(JobType));
+    xTaskCreate(WorkerThreadJobHandler, "BluetoothHFClientWorker", 4 * 1024, nullptr, configMAX_PRIORITIES - 3, &workerThread);
 }
 
 
@@ -81,15 +89,37 @@ esp_err_t Client::StartCoreService() {
     return ESP_OK;
 }
 
-void GAPEventHandler(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
+void Client::GAPEventHandler(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
 {
 
 }
 
 
-void HFEventHandler(esp_hf_client_cb_event_t event, esp_hf_client_cb_param_t *param)
+void Client::HFEventHandler(esp_hf_client_cb_event_t event, esp_hf_client_cb_param_t *param)
 {
     
+}
+
+void Client::WorkerThreadJobHandler(void* arg)
+{
+    Client& clientInstance = Client::GetInstance();
+    QueueHandle_t jobQueue = clientInstance.workerJobQueue;
+
+    Client::JobType receivedJob;
+
+    while (true) {
+        // Wait indefinitely for a job to be available in the queue
+        // Waiting indefinitely is not the best use of our resources. I should fix this, so the task can sleep.
+        if (xQueueReceive(jobQueue, &receivedJob, portMAX_DELAY) == pdTRUE) {
+            // Execute the job function with the provided parameter
+            Client::JobFunctionType jobFunction = receivedJob.jobFunction;
+            void* jobParam = receivedJob.jobParam;
+
+            if (jobFunction != nullptr) {
+                jobFunction(jobParam);
+            }
+        }
+    }
 }
 
 void Client::GetBluetoothAddress(char addressStr[18]) {
