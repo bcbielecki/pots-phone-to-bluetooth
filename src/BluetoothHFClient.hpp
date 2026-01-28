@@ -1,12 +1,15 @@
 #ifndef BLUETOOTH_HF_CLIENT_HPP
 #define BLUETOOTH_HF_CLIENT_HPP
 
-#include "esp_err.h"
-
 /**********************************************************************
  * @file BluetoothHFClient.hpp
  * @brief Header file for Bluetooth Hands-Free Client static class.
  **********************************************************************/
+
+#include "esp_err.h"
+
+#include "esp_gap_bt_api.h"
+#include "esp_hf_client_api.h"
 
 namespace BluetoothHF {
 

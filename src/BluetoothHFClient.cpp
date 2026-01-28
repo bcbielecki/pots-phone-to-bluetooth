@@ -1,3 +1,8 @@
+/**********************************************************************
+ * @file BluetoothHFClient.cpp
+ * @brief Implementation of Bluetooth Hands-Free Client static class.
+ **********************************************************************/
+
 #include "BluetoothHFClient.hpp"
 
 #include "esp_err.h"
