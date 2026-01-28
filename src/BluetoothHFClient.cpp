@@ -108,8 +108,7 @@ void Client::WorkerThreadJobHandler(void* arg)
     Client::JobType receivedJob;
 
     while (true) {
-        // Wait indefinitely for a job to be available in the queue
-        // Waiting indefinitely is not the best use of our resources. I should fix this, so the task can sleep.
+        // Wait indefinitely for a job to be available in the queue. xQueueReceive is a blocking call.
         if (xQueueReceive(jobQueue, &receivedJob, portMAX_DELAY) == pdTRUE) {
             // Execute the job function with the provided parameter
             Client::JobFunctionType jobFunction = receivedJob.jobFunction;
