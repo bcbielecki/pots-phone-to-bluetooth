@@ -22,7 +22,8 @@ namespace BluetoothHF {
     class Client {
     public:
 
-        
+        /// @brief This handles jobs added to the queue by GAPEventHandler and HFEventHandler.
+        /// It is registered when creating the worker thread in the constructor.
         static void WorkerThreadJobHandler(void* arg);
 
         /// @brief Gets the singleton instance of the Bluetooth Hands-Free Client
