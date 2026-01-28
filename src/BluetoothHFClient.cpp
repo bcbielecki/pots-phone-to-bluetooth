@@ -35,6 +35,16 @@ Client::Client() : isServiceInitialized(false) {
     xTaskCreate(WorkerThreadJobHandler, "BluetoothHFClientWorker", 4 * 1024, nullptr, configMAX_PRIORITIES - 3, &workerThread);
 }
 
+Client::~Client() {
+
+    if (workerThread) {
+        vTaskDelete(workerThread);
+    }
+
+    if (workerJobQueue) {
+        vQueueDelete(workerJobQueue);
+    }
+}
 
 esp_err_t Client::StartCoreService() {
 

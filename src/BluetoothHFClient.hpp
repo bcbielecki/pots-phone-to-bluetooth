@@ -69,7 +69,7 @@ namespace BluetoothHF {
         
     private:
         Client();
-        ~Client() {};
+        ~Client();
 
         using JobFunctionType = void(*)(void*);
 
