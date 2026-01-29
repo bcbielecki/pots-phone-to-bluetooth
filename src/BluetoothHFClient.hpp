@@ -24,6 +24,13 @@ namespace BluetoothHF {
     class Client {
     public:
 
+        /// @brief Gets the singleton instance of the Bluetooth Hands-Free Client
+        /// @return  Client& - R=reference to the singleton Client instance
+        static Client& GetInstance() {
+            static Client instance;
+            return instance;
+        }
+
         /// @brief This handles jobs added to the queue by GAPEventHandler and HFEventHandler.
         /// It is registered when creating the worker thread in the constructor.
         static void WorkerThreadJobHandler(void* arg);
@@ -41,21 +48,18 @@ namespace BluetoothHF {
         /// @param param - parameters associated with the event
         static void HFEventHandler(esp_hf_client_cb_event_t event, esp_hf_client_cb_param_t *param);
 
-        /// @brief Gets the singleton instance of the Bluetooth Hands-Free Client
-        /// @return  Client& - R=reference to the singleton Client instance
-        static Client& GetInstance() {
-            static Client instance;
-            return instance;
-        }
-
         /// @brief Initializes the various services required for the Bluetooth Hands-Free Client
+        /// @param deviceName - The Bluetooth device name to set for the client. It will be visible to other devices.
         /// @return esp_err_t - ESP_OK if successful, error code otherwise. If an error occurs, it is rather fatal for the Bluetooth functionality.
-        esp_err_t StartCoreService();
+        esp_err_t StartCoreService(const char* deviceName);
 
         /// @brief Checks if the core Bluetooth Hands-Free service is active
         /// @return bool - true if the service is active (after calling StartCoreService() with success), false otherwise.
         bool IsCoreServiceActive() { return isServiceInitialized; }
 
+        /// @brief Starts device discovery to find nearby Bluetooth devices.
+        /// This is not expected to fail unless the core service is not started.
+        esp_err_t StartDiscovery();
 
         esp_err_t Connect();
         esp_err_t Disconnect();
@@ -89,4 +93,4 @@ namespace BluetoothHF {
     };
 
 }
-#endif // BLUETOOTH_HF_CLIENT_HPP
+#endif // BLUETOOTH_HF_CLIENT_HPP   

@@ -66,7 +66,7 @@ void initializeBluetoothSecurity() {
     esp_bt_gap_set_pin(pinType, 4, pinCode);
 }
 
-esp_err_t Client::StartCoreService() {
+esp_err_t Client::StartCoreService(const char* deviceName) {
 
     /**
      * We'll now initialize the various components of the Bluetooth stack 
@@ -145,6 +145,9 @@ esp_err_t Client::StartCoreService() {
     errorCode = esp_bluedroid_enable();
     ESP_RETURN_ON_ERROR(errorCode, LOG_TAG_CLIENT, "%s - BlueDroid enable failed: %s",
          __func__, esp_err_to_name(errorCode));
+
+    // Set the Bluetooth device name
+    esp_bt_gap_set_device_name(deviceName);
   
     // Register the GAP and HFP client event handlers
     esp_bt_gap_register_callback(GAPEventHandler);
@@ -167,6 +170,24 @@ esp_err_t Client::StartCoreService() {
     initializeBluetoothSecurity();
 
     return ESP_OK;
+}
+
+esp_err_t Client::StartDiscovery() {
+
+    if (isServiceInitialized)
+    {
+        // Set the device to be connectable and discoverable
+        esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+
+        // Start device discovery with general inquiry mode, inquiry length of 10 seconds, and unlimited responses.
+        // The parameter can be adjusted to ESP_BT_INQ_MODE_LIMITED_INQUIRY, which is supposed to search for a limited period,
+        // but then again we are already specifying the inquiry length. So, I'm not sure what the exact difference is in practice.
+        return esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 10, 0);
+    }
+    else {
+        ESP_LOGE(LOG_TAG_CLIENT, "%s - Cannot start discovery, service not initialized.", __func__);
+        return ESP_ERR_INVALID_STATE;
+    }
 }
 
 void Client::GAPEventHandler(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
