@@ -182,7 +182,14 @@ esp_err_t Client::StartDiscovery() {
         // Start device discovery with general inquiry mode, inquiry length of 10 seconds, and unlimited responses.
         // The parameter can be adjusted to ESP_BT_INQ_MODE_LIMITED_INQUIRY, which is supposed to search for a limited period,
         // but then again we are already specifying the inquiry length. So, I'm not sure what the exact difference is in practice.
-        return esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 10, 0);
+        esp_err_t errorCode = esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 10, 0);
+        if (errorCode == ESP_OK) {
+            ESP_LOGI(LOG_TAG_CLIENT, "%s - Device discovery started successfully.", __func__);
+        }
+        else {
+            ESP_LOGE(LOG_TAG_CLIENT, "%s - Failed to start device discovery: %s", __func__, esp_err_to_name(errorCode));
+        }
+        return errorCode;
     }
     else {
         ESP_LOGE(LOG_TAG_CLIENT, "%s - Cannot start discovery, service not initialized.", __func__);
