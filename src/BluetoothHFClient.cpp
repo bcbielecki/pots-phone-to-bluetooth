@@ -46,6 +46,26 @@ Client::~Client() {
     }
 }
 
+void initializeBluetoothSecurity() {
+
+// Set the security parameters for Bluetooth pairing
+#if defined(CONFIG_BT_SSP_ENABLED)
+    esp_bt_sp_param_t securityParam = ESP_BT_SP_IOCAP_MODE;
+    esp_bt_io_cap_t inputOutputCapability = ESP_BT_IO_CAP_NONE; // NoInputNoOutput - suitable for headless devices
+    esp_bt_gap_set_security_param(securityParam, &inputOutputCapability, sizeof(esp_bt_sp_param_t));
+#endif
+
+    // Set a fixed PIN code "0000" for pairing. Although, with NoInputNoOutput, 
+    // this may not be requested from the Audio Gateway (AG).
+    esp_bt_pin_type_t pinType = ESP_BT_PIN_TYPE_FIXED;
+    esp_bt_pin_code_t pinCode;
+    pinCode[0] = '0';
+    pinCode[1] = '0';
+    pinCode[2] = '0';
+    pinCode[3] = '0';
+    esp_bt_gap_set_pin(pinType, 4, pinCode);
+}
+
 esp_err_t Client::StartCoreService() {
 
     if (IsCoreServiceActive()) {
@@ -95,6 +115,8 @@ esp_err_t Client::StartCoreService() {
          __func__, esp_err_to_name(errorCode));
   
     this->isServiceInitialized = true;
+
+    initializeBluetoothSecurity();
 
     return ESP_OK;
 }

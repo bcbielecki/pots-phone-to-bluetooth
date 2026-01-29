@@ -19,6 +19,8 @@
 namespace BluetoothHF {
 
     /// @brief Bluetooth Hands-Free Client class.
+    /// Security settings are currently hardcoded to NoInputNoOutput and PIN "0000".
+    /// Those settings could be exposed in the future if needed.
     class Client {
     public:
 
