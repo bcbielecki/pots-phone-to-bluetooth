@@ -100,9 +100,8 @@ esp_err_t Client::StartCoreService(const char* deviceName) {
      *        └─────────────────────────────────┘
      */
 
-    if (IsCoreServiceActive()) {
+    if (IsCoreServiceActive())
         return ESP_OK;
-    }
 
     esp_err_t errorCode = ESP_OK;
 
@@ -174,7 +173,7 @@ esp_err_t Client::StartCoreService(const char* deviceName) {
 
 esp_err_t Client::StartDiscovery() {
 
-    if (isServiceInitialized)
+    if (IsCoreServiceActive())
     {
         // Set the device to be connectable and discoverable
         esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
@@ -231,15 +230,12 @@ void Client::WorkerThreadJobHandler(void* arg)
 
 void Client::GetBluetoothAddress(char addressStr[18]) {
     
-    if (!IsCoreServiceActive()) {
+    if (!IsCoreServiceActive())
         return;
-    }
 
     const uint8_t* numAddress = esp_bt_dev_get_address();
-
-    if (numAddress == nullptr) {
+    if (numAddress == nullptr)
         return;
-    }
 
     sprintf(addressStr, "%02x:%02x:%02x:%02x:%02x:%02x", numAddress[0], numAddress[1], numAddress[2], numAddress[3], numAddress[4], numAddress[5]);
 }
