@@ -28,6 +28,19 @@ namespace BluetoothHF {
         /// It is registered when creating the worker thread in the constructor.
         static void WorkerThreadJobHandler(void* arg);
 
+        /// @brief Handles General Access Profile (GAP) events.
+        /// Should be registered as a callback with esp_bt_gap_register_callback in StartCoreService.
+        /// When it receives an event, the corresponding job will be scheduled with the worker thread.
+        /// @param event - the GAP event type
+        /// @param param - parameters associated with the event
+        static void GAPEventHandler(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param);
+
+        /// @brief Handles Hands-Free Profile (HFP) client events.
+        /// Should be registered as a callback with esp_hf_client_register_callback in StartCoreService.
+        /// @param event - the Hands-Free Client event type
+        /// @param param - parameters associated with the event
+        static void HFEventHandler(esp_hf_client_cb_event_t event, esp_hf_client_cb_param_t *param);
+
         /// @brief Gets the singleton instance of the Bluetooth Hands-Free Client
         /// @return  Client& - R=reference to the singleton Client instance
         static Client& GetInstance() {
@@ -42,19 +55,6 @@ namespace BluetoothHF {
         /// @brief Checks if the core Bluetooth Hands-Free service is active
         /// @return bool - true if the service is active (after calling StartCoreService() with success), false otherwise.
         bool IsCoreServiceActive() { return isServiceInitialized; }
-
-        /// @brief Handles General Access Profile (GAP) events.
-        /// Should be registered as a callback with esp_bt_gap_register_callback in StartCoreService.
-        /// When it receives an event, the corresponding job will be scheduled with the worker thread.
-        /// @param event - the GAP event type
-        /// @param param - parameters associated with the event
-        void GAPEventHandler(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param);
-
-        /// @brief Handles Hands-Free Profile (HFP) client events.
-        /// Should be registered as a callback with esp_hf_client_register_callback in StartCoreService.
-        /// @param event - the Hands-Free Client event type
-        /// @param param - parameters associated with the event
-        void HFEventHandler(esp_hf_client_cb_event_t event, esp_hf_client_cb_param_t *param);
 
 
         esp_err_t Connect();

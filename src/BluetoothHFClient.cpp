@@ -68,6 +68,38 @@ void initializeBluetoothSecurity() {
 
 esp_err_t Client::StartCoreService() {
 
+    /**
+     * We'll now initialize the various components of the Bluetooth stack 
+     * required for the Hands-Free Client functionality.
+     * See below for a simplified architecture diagram:
+     * 
+     * ESP-IDF Bluetooth Protocol Stack Architecture
+     * ================================================
+     *
+     *        ┌─────────────────────────────────┐
+     *        │   BluetoothHFClient Singleton   │
+     *        └──────────────┬──────────────────┘
+     *                       │
+     *        ┌──────────────▼──────────────────┐
+     *        │  Hands-Free Profile (HFP)       │
+     *        │  Client Implementation          │
+     *        └──────────────┬──────────────────┘
+     *                       │
+     *        ┌──────────────▼──────────────────┐
+     *        │       ESP-BlueDroid Stack       │
+     *        │   ┌──────────────────────────┐  │
+     *        │   │  General Access Profile  │  │
+     *        │   └──────────────────────────┘  │
+     *        └──────────────┬──────────────────┘
+     *                       │
+     *        ┌──────────────▼──────────────────┐
+     *        │  Bluetooth Controller (Hardware)│
+     *        │  - Link Manager                 │
+     *        │  - Baseband                     │
+     *        │  - RF Transceiver               │
+     *        └─────────────────────────────────┘
+     */
+
     if (IsCoreServiceActive()) {
         return ESP_OK;
     }
@@ -114,7 +146,23 @@ esp_err_t Client::StartCoreService() {
     ESP_RETURN_ON_ERROR(errorCode, LOG_TAG_CLIENT, "%s - BlueDroid enable failed: %s",
          __func__, esp_err_to_name(errorCode));
   
+    // Register the GAP and HFP client event handlers
+    esp_bt_gap_register_callback(GAPEventHandler);
+    esp_hf_client_register_callback(HFEventHandler);
+
+    // Initialize the Hands-Free Profile (HFP) client
+    errorCode = esp_hf_client_init();
+    ESP_RETURN_ON_ERROR(errorCode, LOG_TAG_CLIENT, "%s - Hands-Free Client initialization failed: %s",
+         __func__, esp_err_to_name(errorCode));
+
+    // If we made it this far, we've passed the major initialization steps (the things most likely to fail).
+    // We can now mark the service as initialized. From here on, errors are less likely, but still possible.
+    // We won't be reporting them.
     this->isServiceInitialized = true;
+
+    // Initialize the PBAC (Phone Book Access Client) service if needed in the future
+    // esp_pbac_register_callback(nullptr);
+    // esp_pbac_init();
 
     initializeBluetoothSecurity();
 
