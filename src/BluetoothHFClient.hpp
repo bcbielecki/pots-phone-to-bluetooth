@@ -22,6 +22,7 @@ namespace BluetoothHF {
     /// Security settings are currently hardcoded to NoInputNoOutput and PIN "0000".
     /// Those settings could be exposed in the future if needed.
     class Client {
+
     public:
 
         /// @brief Gets the singleton instance of the Bluetooth Hands-Free Client
@@ -30,23 +31,6 @@ namespace BluetoothHF {
             static Client instance;
             return instance;
         }
-
-        /// @brief This handles jobs added to the queue by GAPEventHandler and HFEventHandler.
-        /// It is registered when creating the worker thread in the constructor.
-        static void WorkerThreadJobHandler(void* arg);
-
-        /// @brief Handles General Access Profile (GAP) events.
-        /// Should be registered as a callback with esp_bt_gap_register_callback in StartCoreService.
-        /// When it receives an event, the corresponding job will be scheduled with the worker thread.
-        /// @param event - the GAP event type
-        /// @param param - parameters associated with the event
-        static void GAPEventHandler(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param);
-
-        /// @brief Handles Hands-Free Profile (HFP) client events.
-        /// Should be registered as a callback with esp_hf_client_register_callback in StartCoreService.
-        /// @param event - the Hands-Free Client event type
-        /// @param param - parameters associated with the event
-        static void HFEventHandler(esp_hf_client_cb_event_t event, esp_hf_client_cb_param_t *param);
 
         /// @brief Initializes the various services required for the Bluetooth Hands-Free Client
         /// @param deviceName - The Bluetooth device name to set for the client. It will be visible to other devices.
@@ -72,10 +56,25 @@ namespace BluetoothHF {
         /// @param addressStr - output parameter to hold the Bluetooth address as a string. 
         /// If the client is not initialized, returns nullptr.
         void GetBluetoothAddress(char addressStr[18]);
-        
+
     private:
-        Client();
-        ~Client();
+
+        /// @brief This handles jobs added to the queue by GAPEventHandler and HFEventHandler.
+        /// It is registered when creating the worker thread in the constructor.
+        static void WorkerThreadJobHandler(void* arg);
+
+        /// @brief Handles General Access Profile (GAP) events.
+        /// Should be registered as a callback with esp_bt_gap_register_callback in StartCoreService.
+        /// When it receives an event, the corresponding job will be scheduled with the worker thread.
+        /// @param event - the GAP event type
+        /// @param param - parameters associated with the event
+        static void GAPEventHandler(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param);
+
+        /// @brief Handles Hands-Free Profile (HFP) client events.
+        /// Should be registered as a callback with esp_hf_client_register_callback in StartCoreService.
+        /// @param event - the Hands-Free Client event type
+        /// @param param - parameters associated with the event
+        static void HFEventHandler(esp_hf_client_cb_event_t event, esp_hf_client_cb_param_t *param);
 
         using JobFunctionType = void(*)(void*);
 
@@ -88,8 +87,13 @@ namespace BluetoothHF {
         QueueHandle_t workerJobQueue;
 
         bool isServiceInitialized;
+        bool isConnected;
         static constexpr const char* LOG_TAG_CLIENT = "BluetoothHFClient";
 
+        Client();
+        ~Client();
+        Client(const Client&) = delete;
+        Client& operator=(const Client&) = delete;
     };
 
 }

@@ -26,9 +26,7 @@
 
 using namespace BluetoothHF;
 
-
-
-Client::Client() : isServiceInitialized(false) {
+Client::Client() : isServiceInitialized(false), isConnected(false) {
     // I should probably start the worker thread and job queue here,
     // so their handles are initialized immediately.
     workerJobQueue = xQueueCreate(10, sizeof(JobType));
@@ -196,9 +194,75 @@ esp_err_t Client::StartDiscovery() {
     }
 }
 
+void Client::GetBluetoothAddress(char addressStr[18]) {
+    
+    if (!IsCoreServiceActive())
+        return;
+
+    const uint8_t* numAddress = esp_bt_dev_get_address();
+    if (numAddress == nullptr)
+        return;
+
+    sprintf(addressStr, "%02x:%02x:%02x:%02x:%02x:%02x", numAddress[0], numAddress[1], numAddress[2], numAddress[3], numAddress[4], numAddress[5]);
+}
+
+esp_err_t Client::Connect() {
+    // Implementation for connecting to a Bluetooth Hands-Free device
+    return ESP_OK;
+}
+
+esp_err_t Client::Disconnect() {
+    // Implementation for disconnecting from a Bluetooth Hands-Free device
+    return ESP_OK;
+}
+
+bool Client::IsConnected() {
+    return isConnected;
+}
+
+esp_err_t Client::AnswerCall() {
+    // Implementation to answer an incoming call
+    return ESP_OK;
+}
+
+esp_err_t Client::EndCall() {
+    // Implementation to end the current call
+    return ESP_OK;
+}
+
+esp_err_t Client::DialNumber(const char* number) {
+    if (!IsConnected()) {
+        ESP_LOGE(LOG_TAG_CLIENT, "%s - Cannot dial number, not connected to any device.", __func__);
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    return esp_hf_client_dial(number);
+}
+
 void Client::GAPEventHandler(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
 {
+    Client& clientInstance = Client::GetInstance();
+    if (!clientInstance.IsCoreServiceActive()) {
+        ESP_LOGE(LOG_TAG_CLIENT, "%s - GAP event received but service not initialized.", __func__);
+    }
 
+    switch(event)
+    {
+    // Connection established with an Audio Gateway (AG) device
+    case ESP_BT_GAP_ACL_CONN_CMPL_STAT_EVT:
+        // Needs to be made thread-safe
+        // clientInstance.isConnected = true;
+        ESP_LOGI(LOG_TAG_CLIENT, "%s - Connection established.", __func__);
+        break;
+    // Connection broken with an Audio Gateway (AG) device
+    case ESP_BT_GAP_ACL_DISCONN_CMPL_STAT_EVT:
+        // Needs to be made thread-safe
+        // clientInstance.isConnected = false;
+        ESP_LOGI(LOG_TAG_CLIENT, "%s - Remove bonded device completed.", __func__);
+        break;
+    default:
+        ESP_LOGE(LOG_TAG_CLIENT, "%s - Unhandled GAP event: %d", __func__, event);
+    }
 }
 
 
@@ -226,45 +290,4 @@ void Client::WorkerThreadJobHandler(void* arg)
             }
         }
     }
-}
-
-void Client::GetBluetoothAddress(char addressStr[18]) {
-    
-    if (!IsCoreServiceActive())
-        return;
-
-    const uint8_t* numAddress = esp_bt_dev_get_address();
-    if (numAddress == nullptr)
-        return;
-
-    sprintf(addressStr, "%02x:%02x:%02x:%02x:%02x:%02x", numAddress[0], numAddress[1], numAddress[2], numAddress[3], numAddress[4], numAddress[5]);
-}
-
-esp_err_t Client::Connect() {
-    // Implementation for connecting to a Bluetooth Hands-Free device
-    return ESP_OK;
-}
-
-esp_err_t Client::Disconnect() {
-    // Implementation for disconnecting from a Bluetooth Hands-Free device
-    return ESP_OK;
-}
-
-bool Client::IsConnected() {
-    // Implementation to check if connected to a Bluetooth Hands-Free device
-    return false;
-}
-
-esp_err_t Client::AnswerCall() {
-    // Implementation to answer an incoming call
-    return ESP_OK;
-}
-
-esp_err_t Client::EndCall() {
-    // Implementation to end the current call
-    return ESP_OK;
-}
-
-esp_err_t Client::DialNumber(const char* number) {
-    return esp_hf_client_dial(number);
 }
