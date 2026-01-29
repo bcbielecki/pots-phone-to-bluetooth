@@ -266,6 +266,5 @@ esp_err_t Client::EndCall() {
 }
 
 esp_err_t Client::DialNumber(const char* number) {
-    // Implementation to dial a number
-    return ESP_OK;
+    return esp_hf_client_dial(number);
 }
