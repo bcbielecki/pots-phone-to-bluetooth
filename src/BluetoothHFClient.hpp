@@ -41,6 +41,8 @@ namespace BluetoothHF {
         /// @return bool - true if the service is active (after calling StartCoreService() with success), false otherwise.
         bool IsCoreServiceActive() { return isServiceInitialized; }
 
+        void SubscribeToEvents(ClientEventSubscriber& subscriber);
+
         /// @brief Starts device discovery to find nearby Bluetooth devices.
         /// This is not expected to fail unless the core service is not started.
         esp_err_t StartDiscovery();
@@ -94,7 +96,17 @@ namespace BluetoothHF {
         ~Client();
         Client(const Client&) = delete;
         Client& operator=(const Client&) = delete;
+
+        void NotifySubscibersOfEvent();
     };
+
+
+    class ClientEventSubscriber
+    {
+    public:
+        virtual void OnHFPClientEvent(esp_hf_client_cb_event_t event, esp_hf_client_cb_param_t *param) = 0;
+
+    }
 
 }
 #endif // BLUETOOTH_HF_CLIENT_HPP   
