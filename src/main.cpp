@@ -1,7 +1,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/gpio.h"
-#include "BluetoothHFClient.hpp"
+#include "BluetoothHF_IClient.hpp"
+#include "BluetoothHF_ESP32Client.hpp"
 #include "esp_log.h"
 
 // Define the GPIO pin for the LED (GPIO 2 is common for onboard LEDs)
@@ -31,18 +32,24 @@ extern "C" void app_main(void)
     // {
     //  vTaskDelete( xHandle );
     // }
-    BluetoothHF::Client& bluetoothHFClient = BluetoothHF::Client::GetInstance();
+    BluetoothHF::IClient& bluetoothHFClient = BluetoothHF::ESP32Client::GetInstance();
 
-    esp_err_t initError = bluetoothHFClient.StartCoreService("Ben_BT_Device");
-    ESP_ERROR_CHECK( initError );
+    BluetoothHF::ClientErrorCode initError = bluetoothHFClient.StartCoreService("Ben_BT_Device");
+    if (initError != BluetoothHF::ClientErrorCode::ERROR_OK) {
+        ESP_LOGE(LOG_TAG, "Failed to start Bluetooth HF Client core service, error code: %d", static_cast<int>(initError));
+        abort();
+    }
 
     char bluetoothAddressStr[18] {0};
     bluetoothHFClient.GetBluetoothAddress(bluetoothAddressStr);
     ESP_LOGI(LOG_TAG, "Bluetooth address (MAC): %s", bluetoothAddressStr);
 
     // Start device discovery
-    esp_err_t discoveryError = bluetoothHFClient.StartDiscovery();
-    ESP_ERROR_CHECK( discoveryError );
+    BluetoothHF::ClientErrorCode discoveryError = bluetoothHFClient.StartDiscovery();
+    if (discoveryError != BluetoothHF::ClientErrorCode::ERROR_OK) {
+        ESP_LOGE(LOG_TAG, "Failed to start Bluetooth HF Client discovery, error code: %d", static_cast<int>(discoveryError));
+        abort();
+    }
 
     //esp_bt_gap_set_device_name("Ben_BT_Device");
 }

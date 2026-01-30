@@ -1,9 +1,9 @@
-/**********************************************************************
- * @file BluetoothHFClient.cpp
- * @brief Implementation of Bluetooth Hands-Free Client static class.
- **********************************************************************/
+/**************************************************************************
+ * @file BluetoothHF_ESP32Client.cpp
+ * @brief An ESP32 implementation of Bluetooth Hands-Free Client interface
+ **************************************************************************/
 
-#include "BluetoothHFClient.hpp"
+#include "BluetoothHF_ESP32Client.hpp"
 
 #include "esp_err.h"
 #include "esp_check.h"
@@ -24,16 +24,18 @@
 #include "nvs.h"
 #include "nvs_flash.h"
 
+#define RETURN_ON_ESP_ERROR(espError, returnVal, ...) ESP_LOGE(__VA_ARGS__); if (espError != ESP_OK) { return returnVal; }  
+
 using namespace BluetoothHF;
 
-Client::Client() : isServiceInitialized(false), isConnected(false) {
+ESP32Client::ESP32Client() : isServiceInitialized(false), isConnected(false) {
     // I should probably start the worker thread and job queue here,
     // so their handles are initialized immediately.
     workerJobQueue = xQueueCreate(10, sizeof(JobType));
-    xTaskCreate(WorkerThreadJobHandler, "BluetoothHFClientWorker", 4 * 1024, nullptr, configMAX_PRIORITIES - 3, &workerThread);
+    xTaskCreate(WorkerThreadJobHandler, "BluetoothHF_ESP32Worker", 4 * 1024, nullptr, configMAX_PRIORITIES - 3, &workerThread);
 }
 
-Client::~Client() {
+ESP32Client::~ESP32Client() {
 
     if (workerThread) {
         vTaskDelete(workerThread);
@@ -64,7 +66,7 @@ void initializeBluetoothSecurity() {
     esp_bt_gap_set_pin(pinType, 4, pinCode);
 }
 
-esp_err_t Client::StartCoreService(const char* deviceName) {
+ClientErrorCode ESP32Client::StartCoreService(const char* deviceName) {
 
     /**
      * We'll now initialize the various components of the Bluetooth stack 
@@ -75,12 +77,12 @@ esp_err_t Client::StartCoreService(const char* deviceName) {
      * ================================================
      *
      *        ┌─────────────────────────────────┐
-     *        │   BluetoothHFClient Singleton   │
+     *        │   BluetoothHF::ESP32Client      │
      *        └──────────────┬──────────────────┘
      *                       │
      *        ┌──────────────▼──────────────────┐
      *        │  Hands-Free Profile (HFP)       │
-     *        │  Client Implementation          │
+     *        │    Client Implementation        │
      *        └──────────────┬──────────────────┘
      *                       │
      *        ┌──────────────▼──────────────────┐
@@ -99,49 +101,50 @@ esp_err_t Client::StartCoreService(const char* deviceName) {
      */
 
     if (IsCoreServiceActive())
-        return ESP_OK;
+        return ClientErrorCode::ERROR_OK;
 
-    esp_err_t errorCode = ESP_OK;
+    esp_err_t espErrorCode = ESP_OK;
 
     // Initialize the NVS partition in flash storage. 
     // NVS is used by the Bluetooth stack to store pairing information and other settings.
-    errorCode = nvs_flash_init();
-    if (errorCode == ESP_ERR_NVS_NO_FREE_PAGES) {
+    espErrorCode = nvs_flash_init();
+    if (espErrorCode == ESP_ERR_NVS_NO_FREE_PAGES) {
         
-        errorCode = nvs_flash_erase();
-        ESP_RETURN_ON_ERROR(errorCode, LOG_TAG_CLIENT, "%s - NVS flash erase failed: %s",
-            __func__, esp_err_to_name(errorCode));
+        espErrorCode = nvs_flash_erase();
+        RETURN_ON_ESP_ERROR(espErrorCode, ClientErrorCode::ERROR_SERVICE_INIT_FAILED, 
+            LOG_TAG_CLIENT, "%s - NVS flash erase failed: %s", __func__, esp_err_to_name(espErrorCode));
 
-        errorCode = nvs_flash_init();
-        ESP_RETURN_ON_ERROR(errorCode, LOG_TAG_CLIENT, "%s - NVS flash initialization failed: %s",
-            __func__, esp_err_to_name(errorCode));
+
+        espErrorCode = nvs_flash_init();
+        RETURN_ON_ESP_ERROR(espErrorCode, ClientErrorCode::ERROR_SERVICE_INIT_FAILED, 
+            LOG_TAG_CLIENT, "%s - NVS flash initialization failed after erase: %s", __func__, esp_err_to_name(espErrorCode));
     }
 
     // We are using Bluetooth Classic only, so we can release the BLE memory
-    errorCode = esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
-    ESP_RETURN_ON_ERROR(errorCode, LOG_TAG_CLIENT, "%s - Bluetooth controller memory release failed: %s",
-         __func__, esp_err_to_name(errorCode));
+    espErrorCode = esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
+    RETURN_ON_ESP_ERROR(espErrorCode, ClientErrorCode::ERROR_SERVICE_INIT_FAILED, 
+        LOG_TAG_CLIENT, "%s - Bluetooth controller memory release failed: %s", __func__, esp_err_to_name(espErrorCode));
 
     // Initialize the bluetooth controller and enable it, using the default configuration
     esp_bt_controller_config_t bluetoothConfig = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
-    errorCode = esp_bt_controller_init(&bluetoothConfig);
-    ESP_RETURN_ON_ERROR(errorCode, LOG_TAG_CLIENT, "%s - Bluetooth controller initialization failed: %s",
-         __func__, esp_err_to_name(errorCode));
+    espErrorCode = esp_bt_controller_init(&bluetoothConfig);
+    RETURN_ON_ESP_ERROR(espErrorCode, ClientErrorCode::ERROR_SERVICE_INIT_FAILED, 
+        LOG_TAG_CLIENT, "%s - Bluetooth controller initialization failed: %s", __func__, esp_err_to_name(espErrorCode));
 
-    errorCode = esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT);
-    ESP_RETURN_ON_ERROR(errorCode, LOG_TAG_CLIENT, "%s - Bluetooth controller enable failed: %s",
-         __func__, esp_err_to_name(errorCode));
+    espErrorCode = esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT);
+    RETURN_ON_ESP_ERROR(espErrorCode, ClientErrorCode::ERROR_SERVICE_INIT_FAILED, 
+        LOG_TAG_CLIENT, "%s - Bluetooth controller enable failed: %s", __func__, esp_err_to_name(espErrorCode));
 
     // This is a modified version of the native Android Bluetooth Stack, BlueDroid. It's a middleware
     // between the Bluetooth controller and applications (like us). We need to initialize and enable it.
     esp_bluedroid_config_t BlueDroidConfig = BT_BLUEDROID_INIT_CONFIG_DEFAULT();
-    errorCode = esp_bluedroid_init_with_cfg(&BlueDroidConfig);
-    ESP_RETURN_ON_ERROR(errorCode, LOG_TAG_CLIENT, "%s - BlueDroid initialization failed: %s",
-         __func__, esp_err_to_name(errorCode));
+    espErrorCode = esp_bluedroid_init_with_cfg(&BlueDroidConfig);
+    RETURN_ON_ESP_ERROR(espErrorCode, ClientErrorCode::ERROR_SERVICE_INIT_FAILED, 
+        LOG_TAG_CLIENT, "%s - BlueDroid initialization failed: %s", __func__, esp_err_to_name(espErrorCode));
 
-    errorCode = esp_bluedroid_enable();
-    ESP_RETURN_ON_ERROR(errorCode, LOG_TAG_CLIENT, "%s - BlueDroid enable failed: %s",
-         __func__, esp_err_to_name(errorCode));
+    espErrorCode = esp_bluedroid_enable();
+    RETURN_ON_ESP_ERROR(espErrorCode, ClientErrorCode::ERROR_SERVICE_INIT_FAILED, 
+        LOG_TAG_CLIENT, "%s - BlueDroid enable failed: %s", __func__, esp_err_to_name(espErrorCode));
 
     // Set the Bluetooth device name
     esp_bt_gap_set_device_name(deviceName);
@@ -151,97 +154,102 @@ esp_err_t Client::StartCoreService(const char* deviceName) {
     esp_hf_client_register_callback(HFEventHandler);
 
     // Initialize the Hands-Free Profile (HFP) client
-    errorCode = esp_hf_client_init();
-    ESP_RETURN_ON_ERROR(errorCode, LOG_TAG_CLIENT, "%s - Hands-Free Client initialization failed: %s",
-         __func__, esp_err_to_name(errorCode));
+    espErrorCode = esp_hf_client_init();
+    RETURN_ON_ESP_ERROR(espErrorCode, ClientErrorCode::ERROR_SERVICE_INIT_FAILED, 
+        LOG_TAG_CLIENT, "%s - HFP client initialization failed: %s", __func__, esp_err_to_name(espErrorCode));
 
     // If we made it this far, we've passed the major initialization steps (the things most likely to fail).
     // We can now mark the service as initialized. From here on, errors are less likely, but still possible.
     // We won't be reporting them.
     this->isServiceInitialized = true;
 
-    // Initialize the PBAC (Phone Book Access Client) service if needed in the future
+    // Initialize the PBAC (Phone Book Access ESP32) service if needed in the future
     // esp_pbac_register_callback(nullptr);
     // esp_pbac_init();
 
     initializeBluetoothSecurity();
 
-    return ESP_OK;
+    return ClientErrorCode::ERROR_OK;
 }
 
-esp_err_t Client::StartDiscovery() {
+ClientErrorCode ESP32Client::StartDiscovery() {
 
-    if (IsCoreServiceActive())
+    if (!IsCoreServiceActive())
     {
-        // Set the device to be connectable and discoverable
-        esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+        ESP_LOGE(LOG_TAG_CLIENT, "%s - Cannot start discovery, service not initialized.", __func__);
+        return ClientErrorCode::ERROR_SERVICE_NOT_ACTIVE;
+    }
 
-        // Start device discovery with general inquiry mode, inquiry length of 10 seconds, and unlimited responses.
-        // The parameter can be adjusted to ESP_BT_INQ_MODE_LIMITED_INQUIRY, which is supposed to search for a limited period,
-        // but then again we are already specifying the inquiry length. So, I'm not sure what the exact difference is in practice.
-        esp_err_t errorCode = esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 10, 0);
-        if (errorCode == ESP_OK) {
-            ESP_LOGI(LOG_TAG_CLIENT, "%s - Device discovery started successfully.", __func__);
-        }
-        else {
-            ESP_LOGE(LOG_TAG_CLIENT, "%s - Failed to start device discovery: %s", __func__, esp_err_to_name(errorCode));
-        }
-        return errorCode;
+    // Set the device to be connectable and discoverable
+    esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+
+    // Start device discovery with general inquiry mode, inquiry length of 10 seconds, and unlimited responses.
+    // The parameter can be adjusted to ESP_BT_INQ_MODE_LIMITED_INQUIRY, which is supposed to search for a limited period,
+    // but then again we are already specifying the inquiry length. So, I'm not sure what the exact difference is in practice.
+    esp_err_t espErrorCode = esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 10, 0);
+    if (espErrorCode == ESP_OK) {
+        ESP_LOGI(LOG_TAG_CLIENT, "%s - Device discovery started successfully.", __func__);
+        return ClientErrorCode::ERROR_OK;
     }
     else {
-        ESP_LOGE(LOG_TAG_CLIENT, "%s - Cannot start discovery, service not initialized.", __func__);
-        return ESP_ERR_INVALID_STATE;
+        ESP_LOGE(LOG_TAG_CLIENT, "%s - Failed to start device discovery: %s", __func__, esp_err_to_name(espErrorCode));
+        return ClientErrorCode::ERROR_DISCOVERY_FAILED;
     }
 }
 
-void Client::GetBluetoothAddress(char addressStr[18]) {
+ClientErrorCode ESP32Client::GetBluetoothAddress(char addressStr[18]) {
     
     if (!IsCoreServiceActive())
-        return;
+        return ClientErrorCode::ERROR_SERVICE_NOT_ACTIVE;
 
     const uint8_t* numAddress = esp_bt_dev_get_address();
     if (numAddress == nullptr)
-        return;
+        return ClientErrorCode::ERROR_UNKNOWN;
 
     sprintf(addressStr, "%02x:%02x:%02x:%02x:%02x:%02x", numAddress[0], numAddress[1], numAddress[2], numAddress[3], numAddress[4], numAddress[5]);
+    return ClientErrorCode::ERROR_OK;
 }
 
-esp_err_t Client::Connect() {
+ClientErrorCode ESP32Client::Connect() {
     // Implementation for connecting to a Bluetooth Hands-Free device
-    return ESP_OK;
+    return ClientErrorCode::ERROR_OK;
 }
 
-esp_err_t Client::Disconnect() {
+ClientErrorCode ESP32Client::Disconnect() {
     // Implementation for disconnecting from a Bluetooth Hands-Free device
-    return ESP_OK;
+    return ClientErrorCode::ERROR_OK;
 }
 
-bool Client::IsConnected() {
+bool ESP32Client::IsConnected() {
     return isConnected;
 }
 
-esp_err_t Client::AnswerCall() {
+ClientErrorCode ESP32Client::AnswerCall() {
     // Implementation to answer an incoming call
-    return ESP_OK;
+    return ClientErrorCode::ERROR_OK;
 }
 
-esp_err_t Client::EndCall() {
+ClientErrorCode ESP32Client::EndCall() {
     // Implementation to end the current call
-    return ESP_OK;
+    return ClientErrorCode::ERROR_OK;
 }
 
-esp_err_t Client::DialNumber(const char* number) {
+ClientErrorCode ESP32Client::DialNumber(const char* number) {
     if (!IsConnected()) {
         ESP_LOGE(LOG_TAG_CLIENT, "%s - Cannot dial number, not connected to any device.", __func__);
-        return ESP_ERR_INVALID_STATE;
+        return ClientErrorCode::ERROR_DISCONNECTED;
     }
 
-    return esp_hf_client_dial(number);
+    esp_err_t espErrorCode = esp_hf_client_dial(number);
+    RETURN_ON_ESP_ERROR(espErrorCode, ClientErrorCode::ERROR_DIAL_FAILED, 
+        LOG_TAG_CLIENT, "%s - Failed to dial number %s: %s", __func__, number, esp_err_to_name(espErrorCode));
+
+    return ClientErrorCode::ERROR_OK;
 }
 
-void Client::GAPEventHandler(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
+void ESP32Client::GAPEventHandler(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
 {
-    Client& clientInstance = Client::GetInstance();
+    ESP32Client& clientInstance = ESP32Client::GetInstance();
     if (!clientInstance.IsCoreServiceActive()) {
         ESP_LOGE(LOG_TAG_CLIENT, "%s - GAP event received but service not initialized.", __func__);
     }
@@ -266,23 +274,23 @@ void Client::GAPEventHandler(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t 
 }
 
 
-void Client::HFEventHandler(esp_hf_client_cb_event_t event, esp_hf_client_cb_param_t *param)
+void ESP32Client::HFEventHandler(esp_hf_client_cb_event_t event, esp_hf_client_cb_param_t *param)
 {
     
 }
 
-void Client::WorkerThreadJobHandler(void* arg)
+void ESP32Client::WorkerThreadJobHandler(void* arg)
 {
-    Client& clientInstance = Client::GetInstance();
+    ESP32Client& clientInstance = ESP32Client::GetInstance();
     QueueHandle_t jobQueue = clientInstance.workerJobQueue;
 
-    Client::JobType receivedJob;
+    ESP32Client::JobType receivedJob;
 
     while (true) {
         // Wait indefinitely for a job to be available in the queue. xQueueReceive is a blocking call.
         if (xQueueReceive(jobQueue, &receivedJob, portMAX_DELAY) == pdTRUE) {
             // Execute the job function with the provided parameter
-            Client::JobFunctionType jobFunction = receivedJob.jobFunction;
+            ESP32Client::JobFunctionType jobFunction = receivedJob.jobFunction;
             void* jobParam = receivedJob.jobParam;
 
             if (jobFunction != nullptr) {
@@ -290,4 +298,9 @@ void Client::WorkerThreadJobHandler(void* arg)
             }
         }
     }
+}
+
+ClientErrorCode ESP32Client::SubscribeToEvents(IClientEventSubscriber& subscriber)
+{
+    return ClientErrorCode::ERROR_OK;
 }
