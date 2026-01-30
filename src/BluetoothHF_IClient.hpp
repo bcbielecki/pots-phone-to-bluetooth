@@ -40,6 +40,10 @@ namespace BluetoothHF {
 
     };
 
+    /// @brief Bluetooth Hands-Free Client interface.
+    /// Implementations of this interface should enforce the requirement that
+    /// only one instance of the client exists per platform, if applicable. As a secondary requirement,
+    /// only one command should be processed at a time.
     class IClient {
 
     public:
@@ -59,6 +63,7 @@ namespace BluetoothHF {
         /// Implementations of IClient are also expected to implement event notification when events occur.
         /// @param subscriber - reference to the subscriber object implementing the IClientEventSubscriber interface.
         virtual ClientErrorCode SubscribeToEvents(IClientEventSubscriber& subscriber) = 0;
+
 
         /// @brief Starts device discovery to find nearby Bluetooth devices.
         /// This is not expected to fail unless the core service is not started.
