@@ -240,6 +240,8 @@ ClientErrorCode ESP32Client::DialNumber(const char* number) {
         return ClientErrorCode::ERROR_DISCONNECTED;
     }
 
+    // I'm thinking the work below should be queued as a job in the worker thread.
+    // Moreover, we should wait until the job is done and the result is known before returning from this function.
     esp_err_t espErrorCode = esp_hf_client_dial(number);
     RETURN_ON_ESP_ERROR(espErrorCode, ClientErrorCode::ERROR_DIAL_FAILED, 
         LOG_TAG_CLIENT, "%s - Failed to dial number %s: %s", __func__, number, esp_err_to_name(espErrorCode));
